@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  VNT_REPOSITORY: vnt-dev/vnt
+  VNT_REPOSITORY: 17331149294/vnt
 
 jobs:
   metadata:
