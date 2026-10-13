@@ -919,6 +919,10 @@ public final class MainActivity extends AppCompatActivity {
         CheckBox allowIkev2 = toggle(transport, "允许 IKEv2 客户端", "信任服务端注入并固定中继 IKEv2 流量",
                 "允许与 IKEv2/IPsec 客户端互通。此路径不使用 VNT 节点间密码的端到端加密，只应连接受信任的服务端。",
                 config.optBoolean("allow_ikev2", false));
+        CheckBox allowDns = toggle(transport, "应用服务端下发的 DNS（--allow-dns）",
+                "默认启用：把服务端 WG 配置页 dns 框下发的 DNS 写入 VPN 接口",
+                "关闭后忽略服务端下发的 DNS。与 vnt 客户端 --allow-dns 保持一致。",
+                config.optBoolean("allow_dns", true));
         notice(transport, "安全提示：IKEv2 流量不会使用 VNT 节点间 password 加密。", AMBER);
 
         LinearLayout security = section(form, "安全配置", false);
@@ -1099,7 +1103,8 @@ public final class MainActivity extends AppCompatActivity {
                         fec.isChecked(), noPunch.isChecked(), noBroadcast.isChecked(), allowIkev2.isChecked(), noTun.isChecked(),
                         peerAddresses.joined(), turns.joined(), punchModels.joined(), outputRoutes.joined(), inputRoutes.joined(),
                         subnetMappings.joined(), autoSyncSubnet.isChecked(), certValue,
-                        tunnelPort.getText().toString(), portMappings.joined(), allowMapping.isChecked(), udpStuns.joined(), tcpStuns.joined());
+                        tunnelPort.getText().toString(), portMappings.joined(), allowMapping.isChecked(), udpStuns.joined(), tcpStuns.joined(),
+                        allowDns.isChecked());
                 if (existing != null) profile = profile.withId(existing.id);
                 store.save(profile);
                 dialog.dismiss();

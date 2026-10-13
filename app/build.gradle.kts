@@ -13,7 +13,7 @@ android {
         minSdk = 24
         targetSdk = 37
         versionCode = providers.gradleProperty("vntVersionCode").orNull?.toInt() ?: 1
-        versionName = providers.gradleProperty("vntVersionName").orNull ?: "1.0"
+        versionName = providers.gradleProperty("vntVersionName").orNull ?: "1.0.0.1"
         resValue("string", "vnt_core_tag", providers.gradleProperty("vntCoreTag").orNull ?: "unknown")
 
         providers.gradleProperty("vntAbi").orNull?.let { requestedAbi ->

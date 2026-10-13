@@ -451,6 +451,7 @@ public final class VntVpnService extends VpnService {
                 .setMtu(clampMtu(config.optInt("mtu", DEFAULT_MTU)))
                 .addAddress(ip, prefixLen);
         builder.addDisallowedApplication(getPackageName());
+        applyDns(builder, config);
         for (VpnRouteSet.Route route : VpnRouteSet.build(ip, prefixLen,
                 arrayStrings(config.optJSONArray("output")),
                 arrayStrings(config.optJSONArray("input")), activeSubnetRoutes)) {
@@ -472,6 +473,7 @@ public final class VntVpnService extends VpnService {
                 .setMtu(clampMtu(mtu))
                 .addAddress(ip, prefixLen);
         builder.addDisallowedApplication(getPackageName());
+        applyDns(builder, config);
         for (VpnRouteSet.Route route : VpnRouteSet.rebuild(ip, prefixLen, routes)) {
             addRoute(builder, route.address(), route.prefix());
         }
@@ -635,6 +637,17 @@ public final class VntVpnService extends VpnService {
     private static void addRoute(Builder builder, String address, int prefix) {
         if (prefix < 0 || prefix > 32) throw new IllegalArgumentException("无效路由前缀：" + prefix);
         builder.addRoute(address, prefix);
+    }
+
+    /** 把服务端下发的 DNS（--allow-dns，默认启用）写入 VPN 接口。 */
+    private static void applyDns(Builder builder, JSONObject config) {
+        if (config == null || !config.optBoolean("allow_dns", true)) return;
+        JSONArray dns = config.optJSONArray("dns");
+        if (dns == null || dns.length() == 0) return;
+        for (int i = 0; i < dns.length(); i++) {
+            String server = dns.optString(i).trim();
+            if (!server.isEmpty()) builder.addDnsServer(server);
+        }
     }
 
     private static List<String> arrayStrings(JSONArray array) {

@@ -108,7 +108,7 @@ final class VntConfigStore {
                               String outputRoutes, String inputRoutes, String subnetMapping,
                                boolean autoSyncSubnet, String certMode,
                                String tunnelPort, String portMapping, boolean allowMapping,
-                               String udpStun, String tcpStun) throws Exception {
+                               String udpStun, String tcpStun, boolean allowDns) throws Exception {
             validateBasicConfig(server, code, ip);
             validateMtu(mtu);
             JSONObject config = new JSONObject();
@@ -129,6 +129,7 @@ final class VntConfigStore {
             config.put("no_punch", noPunch);
             config.put("no_broadcast", noBroadcast);
             config.put("allow_ikev2", allowIkev2);
+            config.put("allow_dns", allowDns);
             config.put("device_mode", noTun ? "no" : "tun");
             config.put("auto_sync_subnet", autoSyncSubnet);
             config.put("allow_mapping", allowMapping);
@@ -193,7 +194,7 @@ final class VntConfigStore {
             return create(code, String.join("\n", servers), code, password, deviceId, Build.MODEL,
                     "", mtu, false, false, false, false, false, allowIkev2, false,
                     "", "", "", "", "", "", false,
-                    "skip", "", "", false, "", "");
+                    "skip", "", "", false, "", "", true);
         }
 
         Profile withId(String existingId) { return new Profile(existingId, name, json, mode, subscription); }
