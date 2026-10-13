@@ -313,6 +313,20 @@ public final class VntVpnService extends VpnService {
         }
     }
 
+    /** 把运行期快照携带的 DNS 合并进 activeConfigJson，供 VPN 接口重建时应用。 */
+    private void mergeSnapshotDns(RuntimeChange change) {
+        try {
+            List<String> dns = change.getDns();
+            if (dns == null || dns.isEmpty()) return;
+            JSONObject cfg = activeConfigJson == null || activeConfigJson.isBlank()
+                    ? new JSONObject() : new JSONObject(activeConfigJson);
+            cfg.put("dns", new JSONArray(dns));
+            cfg.put("allow_dns", change.isAllowDns());
+            activeConfigJson = cfg.toString();
+            Log.i("VNT", "服务端下发 DNS 已合并进 VPN 配置: " + dns);
+        } catch (Exception ignored) { }
+    }
+
     /**
      * 按快照自带标志应用一次运行期变更：需要新接口时先建立再携带 fd 应用，
      * 否则原地应用。返回 false 表示变更循环应结束（已按意外退出处理）。
@@ -320,6 +334,9 @@ public final class VntVpnService extends VpnService {
     private boolean applyRuntimeChange(VntNetwork expectedNetwork, RuntimeChange change) {
         try {
             if (expectedNetwork != network) return false;
+            // 服务端下发（或本地配置）的 DNS 随快照到达：先合并进 activeConfigJson，
+            // 重建 VPN 接口时 applyDns 才能把它写到 VPN 接口。
+            mergeSnapshotDns(change);
             // 低于核心 MTU 下限的快照会被 native 拒绝：先本地拦截，避免白白重建接口
             Integer snapshotMtu = change.getMtu();
             if (snapshotMtu != null && snapshotMtu < MIN_MTU) {

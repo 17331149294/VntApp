@@ -18,18 +18,23 @@ public final class RuntimeChange {
     private final String deviceName;
     private final String ip;
     private final Integer mtu;
+    private final List<String> dns;
+    private final boolean allowDns;
     private final List<String> routes;
     private final boolean needsVpnRebuild;
     private final boolean needsInstanceRebuild;
 
     private RuntimeChange(String networkCode, String deviceId, String deviceName,
-                          String ip, Integer mtu, List<String> routes,
+                          String ip, Integer mtu, List<String> dns, boolean allowDns,
+                          List<String> routes,
                           boolean needsVpnRebuild, boolean needsInstanceRebuild) {
         this.networkCode = networkCode;
         this.deviceId = deviceId;
         this.deviceName = deviceName;
         this.ip = ip;
         this.mtu = mtu;
+        this.dns = dns;
+        this.allowDns = allowDns;
         this.routes = Collections.unmodifiableList(routes);
         this.needsVpnRebuild = needsVpnRebuild;
         this.needsInstanceRebuild = needsInstanceRebuild;
@@ -43,12 +48,21 @@ public final class RuntimeChange {
             for (int i = 0; i < values.length(); i++) {
                 routes.add(values.get(i).toString());
             }
+            List<String> dns = new ArrayList<>();
+            JSONArray dnsArray = config.optJSONArray("dns");
+            if (dnsArray != null) {
+                for (int i = 0; i < dnsArray.length(); i++) {
+                    dns.add(dnsArray.optString(i, "").trim());
+                }
+            }
             return new RuntimeChange(
                     config.optString("network_code", ""),
                     config.optString("device_id", ""),
                     config.optString("device_name", ""),
                     config.isNull("ip") ? null : config.getString("ip"),
                     config.isNull("mtu") ? null : config.getInt("mtu"),
+                    dns,
+                    config.optBoolean("allow_dns", true),
                     routes,
                     value.optBoolean("needs_vpn_rebuild", false),
                     value.optBoolean("needs_instance_rebuild", false));
@@ -73,6 +87,12 @@ public final class RuntimeChange {
     /** 快照携带的 MTU；未携带时为 {@code null}。 */
     public Integer getMtu() { return mtu; }
 
+    /** 服务端下发（或本地配置）的 DNS 列表；为空表示不应用。 */
+    public List<String> getDns() { return dns; }
+
+    /** 是否允许把 DNS 应用到 VPN 接口（安卓默认开启）。 */
+    public boolean isAllowDns() { return allowDns; }
+
     /** 完整入站路由（CIDR,下一跳 格式）。 */
     public List<String> getRoutes() { return routes; }
 
@@ -94,6 +114,7 @@ public final class RuntimeChange {
     public String toString() {
         return "RuntimeChange{networkCode='" + networkCode + "', deviceId='" + deviceId
                 + "', deviceName='" + deviceName + "', ip=" + ip + ", mtu=" + mtu
+                + ", dns=" + dns + ", allowDns=" + allowDns
                 + ", routes=" + routes + ", needsVpnRebuild=" + needsVpnRebuild
                 + ", needsInstanceRebuild=" + needsInstanceRebuild + '}';
     }
