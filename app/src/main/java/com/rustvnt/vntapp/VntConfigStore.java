@@ -41,6 +41,24 @@ final class VntConfigStore {
         return id;
     }
 
+    /** 首次启动时自动创建默认配置（default / test / dongjianwei.cn:29872）。 */
+    synchronized Profile ensureDefault() {
+        List<Profile> profiles = all();
+        if (!profiles.isEmpty()) return profiles.get(0);
+        try {
+            Profile profile = Profile.create(
+                    "default", "tcp://www.dongjianwei.cn:29872", "test", "dongjianwei",
+                    deviceId(), Build.MODEL, "", 1380,
+                    false, false, false, false, false, true, false,
+                    "", "", "", "0.0.0.0/0", "", "", false,
+                    "skip", "", "", false, "", "", true);
+            save(profile);
+            return profile;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     synchronized void save(Profile profile) {
         List<Profile> profiles = all();
         boolean replaced = false;

@@ -124,6 +124,7 @@ public final class MainActivity extends AppCompatActivity {
             WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         }
         store = new VntConfigStore(this);
+        store.ensureDefault();
         dark = getPreferences(MODE_PRIVATE).getBoolean("dark", false);
         AppCompatDelegate.setDefaultNightMode(dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         buildShell();
